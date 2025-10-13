@@ -6,4 +6,4 @@ ARTIFACT_DIR = Path("artifacts")
 
 
 def test_model_artifact_exists():
-assert (ARTIFACT_DIR / "model.pkl").exists()
+    assert (ARTIFACT_DIR / "model.pkl").exists()
