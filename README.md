@@ -1,12 +1,22 @@
-# Virtual Diabetes Clinic – Risk Scoring API
+# Diabetes risk prediction
 
 
-Predicts short‑term diabetes progression (demo) and serves a numeric risk score.
+Predicts short‑term diabetes progression as JSON files.
+
+Docker Desktop required to be installed to run.
 
 
-## Run locally
+## Pull from github repo
 ```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-python -m ml.train
-uvicorn app.app:app --host 0.0.0.0 --port 8000
+docker pull ghcr.io/lucasoden/assignment_3_group_f:v0.1
+
+### Run container locally
+docker run -p 8000:8000 ghcr.io/lucasoden/assignment_3_group_f:v0.1
+
+### Check health through GET
+curl http://localhost:8000/health
+
+### Check prediction (with example variables) through POST
+curl -X POST http://localhost:8000/predict -H "Content-Type: application/json" -d "{\"age\":0.02,\"sex\":-0.044,\"bmi\":0.06,\"bp\":-0.03,\"s1\":-0.02,\"s2\":0.03,\"s3\":-0.02,\"s4\":0.02,\"s5\":0.02,\"s6\":-0.001}"
+
+
