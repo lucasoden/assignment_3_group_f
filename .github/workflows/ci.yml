@@ -20,7 +20,7 @@ jobs:
       - name: Train (quick smoke)
         run: python -m ml.train
       - name: Run tests
-        run: pytest -q
+        run: python -m pytest -q
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
