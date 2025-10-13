@@ -29,5 +29,6 @@ jobs:
       - name: Read metrics
         id: metrics
         run: |
-          METRICS=$(cat artifacts/metrics.json)
-          echo "body=$METRICS" >> $GITHUB_OUTPUT
+          echo "model_kind=$(jq -r .model_kind artifacts/metrics.json)" >> $GITHUB_OUTPUT
+          echo "model_version=$(jq -r .model_version artifacts/metrics.json)" >> $GITHUB_OUTPUT
+          echo "rmse=$(jq -r .rmse artifacts/metrics.json)" >> $GITHUB_OUTPUT
