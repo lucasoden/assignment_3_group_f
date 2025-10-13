@@ -17,11 +17,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-             - name: Read metrics
-          id: metrics
-          run: |
-            METRICS=$(cat artifacts/metrics.json)
-            echo "body=$METRICS" >> $GITHUB_OUTPUT
+      - name: Read metrics
+        id: metrics
+        run: |
+          METRICS=$(cat artifacts/metrics.json)
+          echo "body=$METRICS" >> $GITHUB_OUTPUT
       - name: Train (quick smoke)
         run: python -m ml.train
       - name: Run tests
