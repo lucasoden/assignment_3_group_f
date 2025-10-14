@@ -33,11 +33,6 @@ jobs:
           docker logs api
           docker rm -f api
 
-      - name: Train model (produce artifacts/)
-        run: python -m ml.train
-        env:
-          PYTHONPATH: ${{ github.workspace }}
-
       - name: Read metrics
         id: metrics
         run: |
