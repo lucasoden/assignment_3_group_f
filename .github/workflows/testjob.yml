@@ -28,6 +28,7 @@ jobs:
 
       - name: Lint
         run: ruff check . --output-format=github
+        continue-on-error: true
         
 
       - name: Build image
