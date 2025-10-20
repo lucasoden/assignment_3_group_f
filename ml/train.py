@@ -19,8 +19,8 @@ ARTIFACT_DIR.mkdir(exist_ok=True)
 
 
 # Toggle here for v0.2 improvement
-MODEL_KIND = "linear" # or "ridge"
-MODEL_VERSION = "v0.1" # update to v0.2 in next iteration
+MODEL_KIND = "ridge" # or "ridge"
+MODEL_VERSION = "v0.2" # update to v0.2 in next iteration
 
 
 

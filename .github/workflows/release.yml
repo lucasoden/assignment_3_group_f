@@ -104,16 +104,16 @@ jobs:
       - name: Push image
         run: docker push "${IMAGE}"
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
-          body: |
-            Automated release for ${{ github.ref_name }}
-            **Metrics:**
-            ```
-            ${{ steps.metrics.outputs.metrics_body }}
-            ```
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Create GitHub Release
+#        uses: softprops/action-gh-release@v2
+#        with:
+#          tag_name: ${{ github.ref_name }}
+#          name: ${{ github.ref_name }}
+#          body: |
+#            Automated release for ${{ github.ref_name }}
+#            **Metrics:**
+#            ```
+#            ${{ steps.metrics.outputs.metrics_body }}
+#            ```
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
