@@ -30,6 +30,14 @@ jobs:
         run: ruff check . --output-format=github
         continue-on-error: true
 
+      - name: Build image
+        run: |
+          REPO_LC="${GITHUB_REPOSITORY,,}"            # force lowercase
+          TAG="${GITHUB_REF_NAME}"
+          IMAGE="ghcr.io/${REPO_LC}:${TAG}"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+          docker build -t "$IMAGE" .        
+
       - name: Smoke test container
         run: |
           docker run -d -p 8000:8000 --name api "${IMAGE}"
