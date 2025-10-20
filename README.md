@@ -6,6 +6,7 @@ Predicts short‑term diabetes progression as JSON files.
 **Note:** Docker Desktop required to be installed and running before attempting.
 
 ---
+In your terminal:
 
 ## Pull from github repo
 ```bash
@@ -15,6 +16,8 @@ docker pull ghcr.io/lucasoden/assignment_3_group_f:v0.1
 ```bash
 docker run -p 8000:8000 ghcr.io/lucasoden/assignment_3_group_f:v0.1
 ```
+Open a new terminal:
+
 ## Check health through GET
 ```bash
 curl http://localhost:8000/health
