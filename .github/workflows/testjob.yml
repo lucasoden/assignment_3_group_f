@@ -91,3 +91,84 @@ jobs:
 #            ```
 #        env:
 #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-test-second:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff pytest
+
+      - name: Lint
+        run: ruff check . --output-format=github
+        continue-on-error: true
+        
+
+      - name: Build image
+        run: |
+          REPO_LC="${GITHUB_REPOSITORY,,}"            # force lowercase
+          TAG="${GITHUB_REF_NAME}"
+          IMAGE="ghcr.io/${REPO_LC}:${TAG}"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+          docker build -t "$IMAGE" .
+
+      - name: Smoke test container
+        run: |
+          docker run -d -p 8000:8000 --name api "${IMAGE}"
+          sleep 3
+          # If health endpoint returns non-200 or non-JSON, this will fail the step
+          curl -sSf http://localhost:8000/health | jq .
+          docker logs api
+          docker rm -f api
+
+      - name: Train (quick smoke)
+        run: python -m ml.train
+
+      - name: Run tests
+        run: python -m pytest -q
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts
+          path: artifacts/
+
+      - name: Read metrics
+        id: metrics
+        run: |
+          echo "model_kind=$(jq -r .model_kind artifacts/metrics.json)" >> $GITHUB_OUTPUT
+          echo "model_version=$(jq -r .model_version artifacts/metrics.json)" >> $GITHUB_OUTPUT
+          echo "rmse=$(jq -r .rmse artifacts/metrics.json)" >> $GITHUB_OUTPUT
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push image
+        run: docker push "${IMAGE}"
+
+
+#      - name: Create GitHub Release
+#        uses: softprops/action-gh-release@v2
+#        with:
+#          tag_name: ${{ github.ref_name }}
+#          name: ${{ github.ref_name }}
+#          body: |
+#            Automated release for ${{ github.ref_name }}
+#            **Metrics:**
+#            ```
+#            ${{ steps.metrics.outputs.metrics_body }}
+#            ```
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
