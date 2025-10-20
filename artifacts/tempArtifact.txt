@@ -1,1 +1,2 @@
-Placeholder file for artifac ts folder.
+Placeholder file for artifacts folder.
+If this file is removed github will try to clean up the folder and prevent artifacts from being uploaded.
