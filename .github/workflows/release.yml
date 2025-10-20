@@ -4,12 +4,58 @@ on:
     tags:
       - 'v*'
 
+  pull_request:
+
 permissions:
   contents: write
   packages: write
 
 jobs:
-  build-publish:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff pytest
+
+      - name: Lint
+        run: ruff check . --output-format=github
+        continue-on-error: true
+
+      - name: Build image
+        run: |
+          REPO_LC="${GITHUB_REPOSITORY,,}"            # force lowercase
+          TAG="${GITHUB_REF_NAME}"
+          IMAGE="ghcr.io/${REPO_LC}:${TAG}"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+          docker build -t "$IMAGE" .        
+
+      - name: Smoke test container
+        run: |
+          docker run -d -p 8000:8000 --name api "${IMAGE}"
+          sleep 3
+          # If health endpoint returns non-200 or non-JSON, this will fail the step
+          curl -sSf http://localhost:8000/health | jq .
+          docker logs api
+          docker rm -f api
+
+      - name: Train (quick smoke)
+        run: python -m ml.train
+
+      - name: Run tests
+        run: python -m pytest -q
+
+
+  release:
+    needs: build-test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,23 +81,18 @@ jobs:
           docker logs api
           docker rm -f api
 
-      # If your build produces artifacts/metrics.json, keep this step.
-      # Otherwise, this will gracefully fall back to "No metrics found."
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts
+          path: artifacts/
+
       - name: Read metrics
         id: metrics
-        shell: bash
         run: |
-          if [[ -f artifacts/metrics.json ]]; then
-            {
-              echo 'metrics_body<<EOF'
-              cat artifacts/metrics.json
-              echo EOF
-            } >> "$GITHUB_OUTPUT"
-          else
-            echo 'metrics_body<<EOF' >> "$GITHUB_OUTPUT"
-            echo 'No metrics found.' >> "$GITHUB_OUTPUT"
-            echo 'EOF' >> "$GITHUB_OUTPUT"
-          fi
+          echo "model_kind=$(jq -r .model_kind artifacts/metrics.json)" >> $GITHUB_OUTPUT
+          echo "model_version=$(jq -r .model_version artifacts/metrics.json)" >> $GITHUB_OUTPUT
+          echo "rmse=$(jq -r .rmse artifacts/metrics.json)" >> $GITHUB_OUTPUT
 
       - name: Login to GHCR
         uses: docker/login-action@v3
